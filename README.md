@@ -6,7 +6,7 @@
 > ```
 > This downloads the custom fine-tuned Gemma 3n model that powers Silent Voice's neural translation capabilities.
 
-## �� Table of Contents
+## Table of Contents
 1. [Introduction](#introduction)
 2. [Key Features](#key-features)
 3. [Quick Start](#quick-start)
