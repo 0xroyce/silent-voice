@@ -1,6 +1,12 @@
 # 🔇 Silent Voice Medical System - Complete Documentation
 
-## 📋 Table of Contents
+> ⚠️ **IMPORTANT: Before launching Silent Voice, you MUST download the AI model:**
+> ```bash
+> ollama run hf.co/0xroyce/silent-voice-multimodal
+> ```
+> This downloads the custom fine-tuned Gemma 3n model that powers Silent Voice's neural translation capabilities.
+
+## �� Table of Contents
 1. [Introduction](#introduction)
 2. [Key Features](#key-features)
 3. [Quick Start](#quick-start)
@@ -73,6 +79,33 @@ This creates a fundamentally different communication paradigm - one where the AI
 - **ICU/Intubated Patients**: Temporary inability to speak
 - **Healthcare Teams**: Enabling better understanding of patient needs
 
+### 🆕 Recent Code Improvements
+
+The latest version includes significant enhancements:
+
+**Performance & Stability**:
+- Dynamic frame resizing for high-resolution videos
+- CPU throttling to prevent system overload (sleeps when CPU > 80%)
+- 5-frame buffers for EAR/MAR readings (more stable detection)
+- Emotion smoothing with 5-frame buffer (reduces false positives)
+
+**Configuration & Flexibility**:
+- External YAML configuration file support
+- Hot-reloadable settings without code changes
+- Customizable communication patterns
+- Per-patient threshold calibration
+
+**Security & Compliance**:
+- Medical logs encrypted with Fernet
+- HIPAA-compliant data storage
+- Secure key management ready
+
+**Detection Improvements**:
+- Automatic calibration in first 20 frames
+- Enhanced YOLO + DeepFace emotion fusion
+- Weighted confidence when emotions disagree
+- Most common emotion over buffer wins
+
 ---
 
 ## Key Features
@@ -116,6 +149,19 @@ This creates a fundamentally different communication paradigm - one where the AI
 - **Clinical format**: JSON export for medical records
 - **Pattern analysis**: Long-term emotional trends
 - **Decision transparency**: Full audit trail of AI decisions
+- **Encryption**: Medical logs encrypted with Fernet for HIPAA compliance
+
+### 🚀 7. Performance Optimizations (NEW)
+- **Dynamic frame resizing**: Automatically scales high-resolution video for faster processing
+- **CPU throttling**: Intelligent performance management when CPU usage exceeds 80%
+- **Buffered readings**: EAR and MAR buffering for stable blink/mouth detection
+- **Emotion smoothing**: 5-frame buffer reduces false positive emotion changes
+
+### ⚙️ 8. Configuration System (NEW)
+- **YAML configuration**: External `config.yaml` for easy customization
+- **Hot-reloadable settings**: Change thresholds without code modification
+- **Preset patterns**: Define custom communication patterns
+- **Per-patient calibration**: Automatic threshold adjustment
 
 ---
 
@@ -129,7 +175,10 @@ git clone https://github.com/0xroyce/silent-voice
 cd silent-voice
 python setup.py
 
-# 2. Run demo
+# 2. Download the Silent Voice AI model (REQUIRED)
+ollama run hf.co/0xroyce/silent-voice-multimodal
+
+# 3. Run demo
 python launch_silent_voice.py --demo --video patient_1.mp4
 ```
 
@@ -166,6 +215,7 @@ python launch_silent_voice.py --preset icu --webcam 0
 - Webcam or video file
 - 4GB RAM minimum (8GB recommended)
 - GPU optional but recommended for real-time processing
+- Ollama running locally (for AI responses)
 
 ### 🔧 Automatic Installation
 
@@ -190,6 +240,9 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 
+# Download the Silent Voice AI model (REQUIRED)
+ollama run hf.co/0xroyce/silent-voice-multimodal
+
 # Download models (automatic on first run)
 # Or manually: https://github.com/ultralytics/assets/releases
 ```
@@ -201,8 +254,11 @@ pip install -r requirements.txt
 - **mediapipe**: Eye and face tracking
 - **opencv-python**: Video processing
 - **torch**: Deep learning backend
-- **ollama** (optional): For Gemma AI responses
+- **ollama** (required): For Silent Voice AI responses
 - **Pillow**: Image processing
+- **psutil**: Performance monitoring and CPU throttling
+- **cryptography**: Medical log encryption
+- **PyYAML**: Configuration file support
 
 ---
 
@@ -468,6 +524,22 @@ The Gemma 3n model continuously recalibrates, maintaining communication even as 
 - **Iris tracking**: 5 points per eye
 - **EAR calculation**: (vertical/horizontal) ratio
 - **Smoothing**: 5-second history window
+- **Automatic calibration**: First 20 frames calibrate blink/mouth thresholds
+- **Buffered readings**: 5-frame buffers for stable detection
+
+#### Enhanced Features (NEW)
+
+**Automatic Calibration**:
+- System automatically calibrates during first 20 frames
+- Adjusts blink threshold based on patient's natural EAR
+- Sets mouth threshold from baseline MAR readings
+- Provides personalized detection without manual tuning
+
+**Enhanced Emotion Fusion**:
+- Combines YOLO and DeepFace emotions intelligently
+- Uses 5-frame emotion buffer to reduce false positives
+- Weighted confidence when emotions disagree
+- Most common emotion over buffer wins
 
 ### 🗣️ Mouth Tracking
 
@@ -683,6 +755,46 @@ python analyze_patterns.py study_data/*.json
 
 ## Configuration
 
+### 📋 Configuration File (config.yaml)
+
+Silent Voice now supports external configuration through `config.yaml`:
+
+```yaml
+# Threshold settings
+blink_threshold: 0.2              # Eye aspect ratio for blink detection
+mouth_open_threshold: 0.08        # Mouth aspect ratio threshold
+emotion_sustain_threshold: 2.0    # Seconds to consider emotion sustained
+high_confidence_threshold: 0.7    # Confidence for high-priority events
+rapid_blink_window: 3.0          # Time window for rapid blink detection
+rapid_blink_count: 5             # Number of blinks to trigger alert
+gaze_pattern_window: 5.0         # Time window for gaze pattern analysis
+confidence_threshold: 0.3        # Minimum face detection confidence
+
+# System settings
+emotion_mode: 'deepface'         # 'deepface' or 'yolo'
+print_mode: 'medical'            # Output format mode
+alert_threshold: 10.0            # Critical alert threshold
+
+# Communication patterns
+communication_patterns:
+  urgent_attention:
+    rapid_blinks: 5
+    emotion: ['fear', 'distress']
+    confidence: 0.7
+  pain_signal:
+    sustained_emotion: ['fear', 'sad', 'angry']
+    duration: 3.0
+    confidence: 0.6
+  acknowledgment:
+    blinks: 2
+    window: 1.0
+    emotion: ['neutral', 'happy']
+  distress_escalation:
+    emotion_sequence: ['sad', 'fear']
+    intensity_increase: true
+    duration: 5.0
+```
+
 ### 📋 Decision Engine Config
 
 ```json
@@ -892,12 +1004,24 @@ print(f"Avg latency: {stats['avg_latency']}ms")
 
 ### 🔧 Common Issues
 
-1. **"No module named 'cv2'"**
+1. **"Silent Voice model not found" or AI responses not working**
+   ```bash
+   # You must download the Silent Voice model first!
+   ollama run hf.co/0xroyce/silent-voice-multimodal
+   
+   # Verify it's downloaded
+   ollama list | grep silent-voice
+   
+   # Make sure Ollama is running
+   ollama serve
+   ```
+
+2. **"No module named 'cv2'"**
    ```bash
    pip install opencv-python opencv-python-headless
    ```
 
-2. **"CUDA out of memory"**
+3. **"CUDA out of memory"**
    ```bash
    # Use smaller model
    python launch_silent_voice.py --model n
@@ -906,7 +1030,7 @@ print(f"Avg latency: {stats['avg_latency']}ms")
    export CUDA_VISIBLE_DEVICES=-1
    ```
 
-3. **"Webcam not found"**
+4. **"Webcam not found"**
    ```bash
    # List cameras
    ls /dev/video*
@@ -915,7 +1039,7 @@ print(f"Avg latency: {stats['avg_latency']}ms")
    python launch_silent_voice.py --webcam 1
    ```
 
-4. **"Ollama connection failed"**
+5. **"Ollama connection failed"**
    ```bash
    # Start Ollama
    ollama serve
@@ -924,7 +1048,7 @@ print(f"Avg latency: {stats['avg_latency']}ms")
    curl http://localhost:11434/api/tags
    ```
 
-5. **"Model download failed"**
+6. **"Model download failed"**
    - Check internet connection
    - Download manually from Ultralytics
    - Place in project directory
@@ -942,9 +1066,15 @@ python emotion_recognition_medical.py \
 
 ### 📝 Logging
 
+Medical logs are now **encrypted** using Fernet encryption for HIPAA compliance. To view encrypted logs:
+
 ```bash
-# View logs
+# View regular logs (session info)
 tail -f log/silent_voice_log_*.json | jq '.'
+
+# Encrypted medical logs require decryption
+# The encryption key is stored in memory during the session
+# For production, implement proper key management
 
 # Filter errors
 grep ERROR log/*.json
