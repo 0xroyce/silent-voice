@@ -1,6 +1,6 @@
-# 🔇 Silent Voice Medical System - Complete Documentation
+# Silent Voice Medical System
 
-> ⚠️ **IMPORTANT: Before launching Silent Voice, you MUST download the AI model:**
+> **IMPORTANT: Before launching Silent Voice, you MUST download the AI model:**
 > ```bash
 > ollama run hf.co/0xroyce/silent-voice-multimodal
 > ```
@@ -26,7 +26,7 @@
 
 ## Introduction
 
-### 🎯 What is Silent Voice?
+### What is Silent Voice?
 
 Silent Voice is a **neural translator for the paralyzed** - a research prototype that reads the body's natural signals and transforms them into natural language. Unlike traditional AAC systems requiring symbol selection or typing, Silent Voice aims to detect the subtlest physiological signals—eye movements, micro-expressions, minimal muscle activity—and converts them into complete, contextually appropriate communication.
 
@@ -34,7 +34,7 @@ A 2-second gaze becomes "I need help urgently." A slight jaw twitch means "Yes."
 
 **At its core**, Silent Voice is powered by a custom fine-tuned Gemma 3n model developed by 0xroyce specifically for medical communication scenarios. This model is the heart of the system - a neural translator that understands biosignals and speaks naturally, translating complex multimodal inputs into full sentences that express not just needs, but emotions, urgency, and context.
 
-### 🌟 Core Philosophy
+### Core Philosophy
 
 - **Patient-First Design**: Every feature is designed with paralysis patients' specific needs in mind
 - **Research-Grade Accuracy**: Optimized for subtle expressions common in medical conditions
@@ -44,7 +44,7 @@ A 2-second gaze becomes "I need help urgently." A slight jaw twitch means "Yes."
 
 **Note**: This is a research prototype demonstrating advanced AI techniques for medical communication. It is not approved for clinical use without proper medical supervision.
 
-### 🔄 Traditional AAC vs Silent Voice
+### Traditional AAC vs Silent Voice
 
 | Aspect | Traditional AAC | Silent Voice |
 |--------|----------------|--------------|
@@ -57,7 +57,7 @@ A 2-second gaze becomes "I need help urgently." A slight jaw twitch means "Yes."
 
 Silent Voice reads what the body is already saying - no new skills to learn.
 
-### 💡 Core Innovation
+### Core Innovation
 
 Silent Voice leverages the fine-tuned Gemma 3n's capabilities to:
 
@@ -69,7 +69,7 @@ Silent Voice leverages the fine-tuned Gemma 3n's capabilities to:
 
 This creates a fundamentally different communication paradigm - one where the AI understands intent from involuntary signals, removing the cognitive load of traditional AAC systems.
 
-### 🏥 Target Users
+### Target Users
 
 - **People with ALS/Motor Neurone Disease**: From early speech difficulties to complete paralysis
 - **Locked-in Syndrome Patients**: Full cognitive function with minimal physical movement
@@ -79,7 +79,7 @@ This creates a fundamentally different communication paradigm - one where the AI
 - **ICU/Intubated Patients**: Temporary inability to speak
 - **Healthcare Teams**: Enabling better understanding of patient needs
 
-### 🆕 Recent Code Improvements
+### Recent Code Improvements
 
 The latest version includes significant enhancements:
 
@@ -110,7 +110,7 @@ The latest version includes significant enhancements:
 
 ## Key Features
 
-### 🧠 1. Fine-Tuned Gemma 3n: The Neural Translator
+### 1. Fine-Tuned Gemma 3n: The Neural Translator
 - **Custom medical LLM** by 0xroyce that reads biosignals and speaks naturally
 - **Multimodal fusion**: Combines weak signals for strong intent detection
 - **Progressive adaptation**: Continuously adjusts as patient abilities change
@@ -120,44 +120,44 @@ The latest version includes significant enhancements:
   - Fear expression + gaze at IV + visual cue → "My IV is leaking!"
 - The model IS the system - a true neural translator for the paralyzed
 
-### 🎯 2. YOLO Emotion Detection
+### 2. YOLO Emotion Detection
 - **Single-pass detection**: Face + emotion in one model (2x faster)
 - **5 medical emotions**: Pain, Distress, Happy, Concentration, Neutral
 - **Automatic switching**: Uses emotion model when available
 - **Custom training**: Create patient-specific models
 
-### 📸 3. Visual Scene Analysis
+### 3. Visual Scene Analysis
 - **Real-time context**: Captures and analyzes patient environment using fine-tuned Gemma 3n
 - **Patient focus**: Distinguishes patient from medical staff
 - **Dynamic responses**: Visual context informs communication
 - **Privacy-first**: Temporary screenshots, immediate deletion
 
-### 💰 4. Cost-Optimized AI Calls
+### 4. Cost-Optimized AI Calls
 - **90%+ cost reduction**: From 720 to 50-100 calls/hour
 - **Priority-based decisions**: CRITICAL > HIGH > MEDIUM > LOW > IGNORE
 - **Medical safety**: Never misses critical events
 - **Budget management**: Per-session limits and tracking
 
-### 👁️ 5. Advanced Eye & Face Tracking
+### 5. Advanced Eye & Face Tracking
 - **Gaze direction**: 9-directional tracking
 - **Blink patterns**: Communication through blinks
 - **Mouth tracking**: Fixed MAR calculation for accuracy
 - **Facial symmetry**: Stroke detection capabilities
 
-### 📊 6. Medical-Grade Logging
+### 6. Medical-Grade Logging
 - **Comprehensive data**: Every detection, decision, and response
 - **Clinical format**: JSON export for medical records
 - **Pattern analysis**: Long-term emotional trends
 - **Decision transparency**: Full audit trail of AI decisions
 - **Encryption**: Medical logs encrypted with Fernet for HIPAA compliance
 
-### 🚀 7. Performance Optimizations (NEW)
+### 7. Performance Optimizations (NEW)
 - **Dynamic frame resizing**: Automatically scales high-resolution video for faster processing
 - **CPU throttling**: Intelligent performance management when CPU usage exceeds 80%
 - **Buffered readings**: EAR and MAR buffering for stable blink/mouth detection
 - **Emotion smoothing**: 5-frame buffer reduces false positive emotion changes
 
-### ⚙️ 8. Configuration System (NEW)
+### 8. Configuration System (NEW)
 - **YAML configuration**: External `config.yaml` for easy customization
 - **Hot-reloadable settings**: Change thresholds without code modification
 - **Preset patterns**: Define custom communication patterns
@@ -167,7 +167,7 @@ The latest version includes significant enhancements:
 
 ## Quick Start
 
-### 🚀 Fastest Setup (30 seconds)
+### Fastest Setup (30 seconds)
 
 ```bash
 # 1. Clone and setup
@@ -182,7 +182,7 @@ ollama run hf.co/0xroyce/silent-voice-multimodal
 python launch_silent_voice.py --demo --video patient_1.mp4
 ```
 
-### 🏥 Medical Monitoring Scenarios
+### Medical Monitoring Scenarios
 
 ```bash
 # ICU Patient (high sensitivity, frequent checks)
@@ -198,7 +198,7 @@ python launch_silent_voice.py --preset stroke --video patient.mp4
 python launch_silent_voice.py --patient "Spinal injury, C4" --context "Home care"
 ```
 
-### 🎬 Live Demo with Webcam
+### Live Demo with Webcam
 
 ```bash
 # Real-time monitoring with your webcam
@@ -209,7 +209,7 @@ python launch_silent_voice.py --preset icu --webcam 0
 
 ## Installation
 
-### 📦 Requirements
+### Requirements
 
 - Python 3.11+
 - Webcam or video file
@@ -217,7 +217,7 @@ python launch_silent_voice.py --preset icu --webcam 0
 - GPU optional but recommended for real-time processing
 - Ollama running locally (for AI responses)
 
-### 🔧 Automatic Installation
+### Automatic Installation
 
 ```bash
 python setup.py
@@ -230,7 +230,7 @@ This will:
 4. Verify installation
 5. Run test
 
-### 📋 Manual Installation
+### Manual Installation
 
 ```bash
 # Create virtual environment
@@ -247,7 +247,7 @@ ollama run hf.co/0xroyce/silent-voice-multimodal
 # Or manually: https://github.com/ultralytics/assets/releases
 ```
 
-### 🧩 Dependencies
+### Dependencies
 
 - **ultralytics** (≥8.0.0): YOLOv11 for face/emotion detection
 - **deepface**: Emotion recognition ensemble
@@ -264,7 +264,7 @@ ollama run hf.co/0xroyce/silent-voice-multimodal
 
 ## System Architecture
 
-### 🏗️ Core Components
+### Core Components
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -286,7 +286,7 @@ ollama run hf.co/0xroyce/silent-voice-multimodal
 │                           │                                 │
 │                           ▼                                 │
 │      ┌─────────────────────────────────────────┐           │
-│      │     🧠 FINE-TUNED GEMMA 3N (CORE)      │           │
+│      │     FINE-TUNED GEMMA 3N (CORE)          │           │
 │      │         by 0xroyce                      │           │
 │      │   Multimodal Medical Communication LLM  │           │
 │      └─────────────────────────────────────────┘           │
@@ -297,7 +297,7 @@ ollama run hf.co/0xroyce/silent-voice-multimodal
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### 📁 File Structure
+### File Structure
 
 ```
 silent-voice/
@@ -311,7 +311,7 @@ silent-voice/
 └── log/                            # Session logs
 ```
 
-### 🔄 Data Flow
+### Data Flow
 
 1. **Input**: Video/webcam frame captured
 2. **Detection**: YOLO detects faces and optionally emotions
@@ -327,7 +327,7 @@ silent-voice/
 
 ## Feature Deep Dive
 
-### 🎯 YOLO Emotion Detection
+### YOLO Emotion Detection
 
 #### Overview
 Traditional approach required two models (YOLO for faces + DeepFace for emotions). The new approach uses a single YOLO model trained for both face detection and emotion classification.
@@ -371,7 +371,7 @@ emotion_dataset/
 - **Accuracy**: 96%+ on medical emotions
 - **Resources**: 50% less memory usage
 
-### 📸 Visual Scene Analysis
+### Visual Scene Analysis
 
 #### How It Works
 
@@ -405,7 +405,7 @@ emotion_dataset/
 - Fear + IV leak visible → "My IV is leaking, please check it!"
 - Distress + pillow position → "This pillow is hurting my neck"
 
-### 💰 Decision Engine
+### Decision Engine
 
 #### Priority Levels
 
@@ -451,7 +451,7 @@ emotion_dataset/
 }
 ```
 
-### 🧠 Integrated Biosignal Generation
+### Integrated Biosignal Generation
 
 #### The Innovation
 
@@ -502,7 +502,7 @@ Silent Voice adapts to declining abilities:
 
 The Gemma 3n model continuously recalibrates, maintaining communication even as physical abilities decline.
 
-### 👁️ Eye & Gaze Tracking
+### Eye & Gaze Tracking
 
 #### Capabilities
 
@@ -541,7 +541,7 @@ The Gemma 3n model continuously recalibrates, maintaining communication even as 
 - Weighted confidence when emotions disagree
 - Most common emotion over buffer wins
 
-### 🗣️ Mouth Tracking
+### Mouth Tracking
 
 #### Fixed Implementation
 
@@ -571,7 +571,7 @@ Wide: > 0.12
 
 ## Usage Guide
 
-### 🚀 Launcher Script (Recommended)
+### Launcher Script (Recommended)
 
 The launcher provides the easiest way to run Silent Voice with optimized presets:
 
@@ -589,7 +589,7 @@ python launch_silent_voice.py \
     --webcam 0
 ```
 
-### 🎛️ Direct Script Usage
+### Direct Script Usage
 
 For more control, use the main script directly:
 
@@ -611,7 +611,7 @@ python emotion_recognition_medical.py \
     --log session.json
 ```
 
-### 📹 Video Analysis
+### Video Analysis
 
 ```bash
 # Analyze recorded session
@@ -626,7 +626,7 @@ for video in sessions/*.mp4; do
 done
 ```
 
-### 🖥️ Live Monitoring
+### Live Monitoring
 
 ```bash
 # Default webcam
@@ -639,7 +639,7 @@ python launch_silent_voice.py --preset icu --webcam /dev/video2
 python emotion_recognition_medical.py --webcam 0 --debug
 ```
 
-### ⌨️ Keyboard Controls
+### Keyboard Controls
 
 During monitoring:
 - **'q'**: Quit session
@@ -652,7 +652,7 @@ During monitoring:
 
 ## Medical Applications
 
-### 🏥 ICU Monitoring
+### ICU Monitoring
 
 **Use Case**: Critical care patients who cannot speak due to intubation or sedation
 
@@ -672,7 +672,7 @@ python launch_silent_voice.py --preset icu --webcam 0
 - "I need suctioning"
 - "Please adjust my position"
 
-### 🧠 ALS Patient Care
+### ALS Patient Care
 
 **Use Case**: Progressive paralysis with retained cognitive function
 
@@ -692,7 +692,7 @@ python launch_silent_voice.py --preset als --video session.mp4
 - "Please adjust my breathing support"
 - "I'm trying to spell something"
 
-### 🏥 Stroke Rehabilitation
+### Stroke Rehabilitation
 
 **Use Case**: Aphasia or hemiplegia affecting communication
 
@@ -712,7 +712,7 @@ python launch_silent_voice.py --preset stroke --webcam 0
 - "Wrong word, let me try again"
 - "I need the speech therapist"
 
-### 🛏️ Palliative Care
+### Palliative Care
 
 **Use Case**: End-of-life care with limited communication ability
 
@@ -730,7 +730,7 @@ python launch_silent_voice.py \
 - Emotional support
 - Family communication
 
-### 🔬 Research Applications
+### Research Applications
 
 **Use Case**: Clinical studies on non-verbal communication
 
@@ -755,7 +755,7 @@ python analyze_patterns.py study_data/*.json
 
 ## Configuration
 
-### 📋 Configuration File (config.yaml)
+### Configuration File (config.yaml)
 
 Silent Voice now supports external configuration through `config.yaml`:
 
@@ -795,7 +795,7 @@ communication_patterns:
     duration: 5.0
 ```
 
-### 📋 Decision Engine Config
+### Decision Engine Config
 
 ```json
 {
@@ -828,7 +828,7 @@ communication_patterns:
 }
 ```
 
-### 🏥 Medical Presets
+### Medical Presets
 
 | Preset | Model | Timing | Budget | Use Case |
 |--------|-------|--------|--------|----------|
@@ -839,7 +839,7 @@ communication_patterns:
 | **pediatric** | YOLOv11x | 15s/5s | 40 | Children |
 | **demo** | YOLOv11m | 15s/5s | 50 | Testing |
 
-### 🔧 Custom Configuration
+### Custom Configuration
 
 ```python
 # In code
@@ -856,7 +856,7 @@ config = {
 }
 ```
 
-### 🌐 Environment Variables
+### Environment Variables
 
 ```bash
 # Optional configuration
@@ -870,7 +870,7 @@ export CUDA_VISIBLE_DEVICES=0  # GPU selection
 
 ## Performance & Optimization
 
-### 📊 Benchmarks
+### Benchmarks
 
 | Metric | Standard Mode | YOLO Emotions | Improvement |
 |--------|---------------|---------------|-------------|
@@ -879,7 +879,7 @@ export CUDA_VISIBLE_DEVICES=0  # GPU selection
 | Memory | 4GB | 2GB | 50% less |
 | Accuracy | 94.8% | 96.2% | 1.4% better |
 
-### 🚀 Optimization Tips
+### Optimization Tips
 
 1. **Model Selection**:
    - `yolo11n`: Fastest, lowest accuracy (30+ FPS)
@@ -910,7 +910,7 @@ export CUDA_VISIBLE_DEVICES=0  # GPU selection
 
 ## Development & Testing
 
-### 🧪 Test Scripts
+### Test Scripts
 
 1. **Visual Analysis Test**:
    ```bash
@@ -937,7 +937,7 @@ export CUDA_VISIBLE_DEVICES=0  # GPU selection
    python test_concise_visual.py
    ```
 
-### 🔍 Debugging
+### Debugging
 
 ```bash
 # Enable debug logging
@@ -953,7 +953,7 @@ python emotion_recognition_medical.py --save-debug-frames
 cat log/*_decisions.json | jq '.events[] | select(.priority == "CRITICAL")'
 ```
 
-### 📈 Performance Monitoring
+### Performance Monitoring
 
 ```python
 # In code
@@ -969,7 +969,7 @@ print(f"Avg FPS: {stats['avg_fps']}")
 print(f"Avg latency: {stats['avg_latency']}ms")
 ```
 
-### 🧩 Extension Points
+### Extension Points
 
 1. **Custom Emotions**:
    ```python
@@ -1002,7 +1002,7 @@ print(f"Avg latency: {stats['avg_latency']}ms")
 
 ## Troubleshooting
 
-### 🔧 Common Issues
+### Common Issues
 
 1. **"Silent Voice model not found" or AI responses not working**
    ```bash
@@ -1053,7 +1053,7 @@ print(f"Avg latency: {stats['avg_latency']}ms")
    - Download manually from Ultralytics
    - Place in project directory
 
-### 🐛 Debug Mode
+### Debug Mode
 
 ```bash
 # Full debug output
@@ -1064,7 +1064,7 @@ python emotion_recognition_medical.py \
     --log debug.json
 ```
 
-### 📝 Logging
+### Logging
 
 Medical logs are now **encrypted** using Fernet encryption for HIPAA compliance. To view encrypted logs:
 
@@ -1173,7 +1173,7 @@ def handle_critical(event_data):
 
 ## Documentation Structure
 
-### 📚 Available Documentation
+### Available Documentation
 
 Silent Voice documentation is organized to help different users find what they need quickly:
 
@@ -1184,7 +1184,7 @@ Silent Voice documentation is organized to help different users find what they n
 | **README_LAUNCHER.md** | Launcher script details | Easy deployment & medical presets |
 | **README_DECISION_ENGINE.md** | Cost optimization engine | Understanding AI call management |
 
-### 🗺️ Reading Paths
+### Reading Paths
 
 **New Users**
 → Start here with this README - it contains everything you need
@@ -1200,7 +1200,7 @@ Silent Voice documentation is organized to help different users find what they n
 **Medical Staff**
 → [Medical Applications](#medical-applications) section + [README_LAUNCHER.md](README_LAUNCHER.md) for presets
 
-### 📝 Note on Consolidation
+### Note on Consolidation
 
 All feature-specific documentation has been consolidated into this README:
 - YOLO emotion detection → [Feature Deep Dive](#feature-deep-dive)
@@ -1213,7 +1213,7 @@ This consolidation makes it easier to understand how all features work together 
 
 ---
 
-## 📚 Additional Resources
+## Additional Resources
 
 ### Additional Documentation
 - [Quick Start Guide](README_QUICKSTART.md)
@@ -1228,7 +1228,7 @@ This consolidation makes it easier to understand how all features work together 
 
 ---
 
-## 🧠 The Core: Fine-Tuned Gemma 3n
+## The Core: Fine-Tuned Gemma 3n
 
 **The heart of Silent Voice** is the custom fine-tuned Gemma 3n model developed by 0xroyce. This isn't just a component - it IS the system. Everything else (emotion detection, eye tracking, visual analysis) exists to feed rich multimodal context into this core neural translator.
 
@@ -1243,7 +1243,7 @@ This enables **communication at the speed of thought** - where a glance becomes 
 
 **Model**: https://hf.co/0xroyce/silent-voice-multimodal
 
-## 👨‍💻 Author & Credits
+## Author & Credits
 
 **Silent Voice** is a research prototype developed by **0xroyce**, including:
 - System architecture centered around the custom Gemma 3n model
@@ -1251,7 +1251,7 @@ This enables **communication at the speed of thought** - where a glance becomes 
 - Integration of multimodal inputs to feed the core model
 - Cost optimization engine for practical deployment
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Ultralytics team for YOLOv11
 - Google MediaPipe team
