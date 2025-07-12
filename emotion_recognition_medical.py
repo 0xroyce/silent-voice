@@ -129,147 +129,72 @@ class SilentVoiceIntegration:
             print("⚠️  Ollama not available - will use fallback responses")
     
     def emotion_to_biosignal(self, emotion, confidence, eye_data=None, context=None, patient_condition=None, visual_context=None):
-        yolo_emotion_map = {
-            'pain': 0,
-            'distress': 1,
-            'happiness': 2,
-            'concentration': 3,
-            'neutral': 4
-        }
-        
-        emotion_to_yolo_class = {
-            'happy': ('happiness', 2),
-            'sad': ('pain', 0),
-            'angry': ('distress', 1),
-            'fear': ('distress', 1),
-            'surprise': ('concentration', 3),
-            'disgust': ('pain', 0),
-            'neutral': ('neutral', 4),
-            'pain': ('pain', 0),
-            'distress': ('distress', 1),
-            'happiness': ('happiness', 2),
-            'concentration': ('concentration', 3)
-        }
-        
-        intensity_descriptors = {
-            'low': {'prefix': 'Slight', 'suffix': ''},
-            'moderate': {'prefix': '', 'suffix': ''},
-            'high': {'prefix': 'Clear', 'suffix': ''},
-            'extreme': {'prefix': 'Intense', 'suffix': ' expression'}
-        }
-        
-        emotion_lower = emotion.lower()
-        yolo_class_name, yolo_class_id = emotion_to_yolo_class.get(emotion_lower, ('neutral', 4))
-        
-        if confidence > 0.9:
-            intensity = 'extreme'
-        elif confidence > 0.7:
-            intensity = 'high'
-        elif confidence > 0.5:
-            intensity = 'moderate'
-        else:
-            intensity = 'low'
-        
+        """
+        Generate a natural biosignal description for AI interpretation.
+        This method now creates simple, factual descriptions without hardcoded mappings.
+        """
+        # Create a simple, factual description
         desc_parts = []
         
-        intensity_desc = intensity_descriptors[intensity]
-        if yolo_class_name == 'happiness':
-            base_desc = 'smile' if intensity in ['low', 'moderate'] else 'happy expression'
-        elif yolo_class_name == 'pain':
-            # Don't hardcode pain/discomfort - let LLM interpret
-            base_desc = 'expression indicating strong feeling'
-        elif yolo_class_name == 'distress':
-            base_desc = 'concerned expression' if emotion_lower == 'fear' else 'tense expression'
-        elif yolo_class_name == 'concentration':
-            base_desc = 'focused expression' if emotion_lower != 'surprise' else 'surprised look'
-        else:
-            base_desc = 'neutral expression'
+        # Add basic emotion detection
+        desc_parts.append(f"{emotion.lower()} expression (confidence: {confidence:.2f})")
         
-        primary_desc = f"{intensity_desc['prefix']} {base_desc}{intensity_desc['suffix']}".strip()
-        desc_parts.append(primary_desc)
-        
+        # Add eye tracking data if available
         if eye_data:
+            # Gaze information
             gaze_direction = eye_data.get('gaze_direction', 'CENTER')
             if gaze_direction != 'CENTER':
-                gaze_desc = f"gaze {gaze_direction.lower().replace('-', ' ')}"
-                desc_parts.append(gaze_desc)
+                desc_parts.append(f"gaze {gaze_direction.lower().replace('-', ' ')}")
             
+            # Blink information
             blink_count = eye_data.get('blink_count', 0)
             if eye_data.get('is_blinking'):
-                desc_parts.append("blinking")
+                desc_parts.append("currently blinking")
             elif blink_count > 10:
-                desc_parts.append(f"frequent blinking ({blink_count} times)")
+                desc_parts.append(f"blinked {blink_count} times")
             
+            # Eye movement
             eye_velocity = eye_data.get('eye_movement_velocity', 0)
             if eye_velocity > 0.5:
                 desc_parts.append("rapid eye movement")
             
+            # Facial landmarks without interpretation
             if 'facial_landmarks' in eye_data:
                 left_eye = eye_data['facial_landmarks']['left_eye']
                 right_eye = eye_data['facial_landmarks']['right_eye']
+                mouth = eye_data['facial_landmarks']['mouth']
                 
+                # Eye state
                 if left_eye['openness'] < 0.2 and right_eye['openness'] < 0.2:
                     desc_parts.append("eyes nearly closed")
                 elif left_eye['openness'] > 0.8 or right_eye['openness'] > 0.8:
                     desc_parts.append("eyes wide open")
                 
-                mouth = eye_data['facial_landmarks']['mouth']
-                if mouth['state'] == 'open' and mouth['openness'] > 0.5:
-                    desc_parts.append("mouth clearly open")
-                elif mouth['state'] == 'open' and mouth['openness'] > 0.25:
-                    desc_parts.append("mouth slightly open")
+                # Mouth state without interpretation
+                if mouth['state'] == 'open':
+                    desc_parts.append(f"mouth {mouth['state']} (openness: {mouth['openness']:.2f})")
                 elif mouth['state'] == 'smile':
-                    if 'smile' not in primary_desc.lower():
-                        desc_parts.append("smiling")
+                    desc_parts.append("smiling")
+                elif mouth['openness'] > 0.1:
+                    desc_parts.append(f"mouth slightly open ({mouth['openness']:.2f})")
         
+        # Add visual context without interpretation
         if visual_context:
-            visual_lower = visual_context.lower()
-            
-            if 'arm' in visual_lower:
-                if 'left' in visual_lower:
-                    desc_parts.append("visual focus on left arm")
-                elif 'right' in visual_lower:
-                    desc_parts.append("visual focus on right arm")
-                else:
-                    desc_parts.append("visual focus on arm")
-            
-            # Remove automatic pain/discomfort keywords - let the visual description speak for itself
-            
-            if 'position' in visual_lower:
-                desc_parts.append("positioning noted")
-            
-            if 'iv' in visual_lower or 'equipment' in visual_lower:
-                desc_parts.append("equipment noted")
-            
-            desc_parts.append(f"[Visual: {visual_context}]")
+            desc_parts.append(f"[Scene: {visual_context}]")
         
-        if len(desc_parts) == 1:
-            biosignal_desc = desc_parts[0]
-        elif len(desc_parts) == 2:
-            biosignal_desc = f"{desc_parts[0]} + {desc_parts[1]}"
-        else:
-            biosignal_desc = f"{desc_parts[0]} + {' + '.join(desc_parts[1:])}"
+        # Create simple biosignal description
+        biosignal_desc = " + ".join(desc_parts)
         
-        use_simple = np.random.random() < 0.4
-        
-        if use_simple or not context:
-            model_input = f"Biosignal: {biosignal_desc}"
-            format_type = "simple"
-        else:
-            urgency = self._determine_urgency(emotion, confidence, intensity)
-            model_input = f"Biosignal: {biosignal_desc}\nContext: {context}"
-            if patient_condition:
-                model_input += f", {patient_condition}"
-            model_input += f"\nUrgency: {urgency}"
-            format_type = "complex"
+        # Create model input without hardcoded urgency
+        model_input = f"Current observation: {biosignal_desc}"
+        if context:
+            model_input += f"\nLocation: {context}"
+        if patient_condition:
+            model_input += f"\nPatient background: {patient_condition}"
         
         log_data = {
-            'yolo_class_id': yolo_class_id,
-            'yolo_class_name': yolo_class_name,
             'original_emotion': emotion,
             'confidence': confidence,
-            'intensity': intensity,
-            'format_type': format_type,
             'biosignal_desc': biosignal_desc,
             'model_input': model_input
         }
@@ -277,21 +202,8 @@ class SilentVoiceIntegration:
         return model_input, log_data
     
     def _determine_urgency(self, emotion, confidence, intensity):
-        emotion_lower = emotion.lower()
-        
-        if (emotion_lower in ['fear', 'angry'] and intensity in ['extreme', 'high']) or \
-           (emotion_lower == 'sad' and intensity == 'extreme'):
-            return 'critical'
-        
-        elif (emotion_lower in ['fear', 'sad', 'angry'] and intensity in ['moderate', 'high']) or \
-             (emotion_lower == 'surprise' and intensity in ['extreme', 'high']):
-            return 'high'
-        
-        elif emotion_lower in ['fear', 'sad', 'angry', 'surprise'] or intensity == 'moderate':
-            return 'medium'
-        
-        else:
-            return 'low'
+        """This method is now unused - urgency is determined by AI"""
+        return None
     
     def generate_response(self, biosignal_input, log_data=None):
         if not OLLAMA_AVAILABLE:
@@ -308,26 +220,27 @@ class SilentVoiceIntegration:
             print(f"  [OLLAMA] Generating response for biosignal with integrated visual context ({len(enhanced_input)} chars)...")
             start_time = time.time()
             
-            system_prompt = """You are a paralysis patient using biosignals to communicate. 
-Respond in FIRST PERSON with what YOU want to say.
+            system_prompt = """You are a person who uses facial expressions, eye movements, and body language to communicate. 
+Respond in FIRST PERSON with what YOU want to say based on the current observation.
 Keep responses SHORT (1-2 sentences max).
-Express YOUR immediate needs, feelings, or thoughts directly.
-Do NOT analyze or explain - just communicate what you need to say.
+Express YOUR immediate thoughts, feelings, or needs directly.
+Do NOT analyze or explain - just communicate what you want to say.
 
-IMPORTANT: Interpret emotions and expressions contextually. Not all intense expressions mean pain.
-- A strong expression could mean frustration, determination, or concentration
-- Consider the full context including gaze, visual scene, and patterns
-- Generate varied responses based on the specific situation
+IMPORTANT: Interpret the situation naturally and contextually.
+- Consider what the person might actually be feeling or thinking
+- Don't assume medical context unless clearly indicated
+- Generate varied, natural responses based on the specific situation
+- A strong expression could mean many things: concentration, determination, frustration, etc.
 
 Examples:
 - "I need water please."
-- "I'm feeling happy to see you."
-- "My back hurts, can you adjust my position?"
+- "I'm happy to see you."
+- "I'm trying to remember something."
 - "Thank you, I'm comfortable now."
-- "I'm trying to remember something important."
 - "I'm concentrating on what you're saying."
-- "I'm frustrated but it's not physical pain."
+- "I'm frustrated but I'm okay."
 - "I need to tell you something important."
+- "I'm feeling tired right now."
 """
             
             messages = [
@@ -374,114 +287,60 @@ Examples:
             }
     
     def _generate_fallback_response(self, biosignal_input):
+        """Generate fallback responses without hardcoded medical assumptions"""
         input_lower = biosignal_input.lower()
         
-        urgency = 'medium'
-        if 'urgency: critical' in input_lower:
-            urgency = 'critical'
-        elif 'urgency: high' in input_lower:
-            urgency = 'high'
-        elif 'urgency: low' in input_lower:
-            urgency = 'low'
-        
-        if 'grimace' in input_lower or ('intense' in input_lower and 'pain' in input_lower):
+        # Simple emotion-based responses without medical bias
+        if 'happy' in input_lower or 'smile' in input_lower:
             responses = [
-                "I'm in severe pain! Please help me immediately!",
-                "The pain is unbearable - I need medication now!",
-                "I'm experiencing intense discomfort - please get help!"
+                "I'm feeling good right now.",
+                "Thank you, I'm comfortable.",
+                "I'm happy to see you."
             ]
-        elif 'pain' in input_lower or 'discomfort' in input_lower:
+        elif 'sad' in input_lower:
             responses = [
-                "I'm experiencing discomfort and need assistance.",
-                "I'm in pain - please check on me.",
-                "Something hurts - can you help?"
+                "I'm feeling sad right now.",
+                "I could use some comfort.",
+                "I'm not feeling my best."
             ]
-        elif 'mouth clearly open' in input_lower and urgency in ['critical', 'high']:
+        elif 'fear' in input_lower or 'scared' in input_lower:
             responses = [
-                "I need immediate help - this is urgent!",
-                "Emergency! I need assistance right now!",
-                "Please help me immediately!"
+                "I'm feeling anxious about something.",
+                "I'm a bit scared right now.",
+                "I need some reassurance."
             ]
-        elif 'smile' in input_lower or 'happy' in input_lower:
+        elif 'angry' in input_lower:
             responses = [
-                "Thank you, I'm feeling better.",
-                "I'm happy to see you.",
-                "I appreciate your help - feeling good."
+                "I'm feeling frustrated.",
+                "Something is bothering me.",
+                "I'm not happy about this situation."
             ]
-        elif 'sad' in input_lower or 'downturned' in input_lower:
+        elif 'surprise' in input_lower:
             responses = [
-                "I'm feeling sad and would appreciate some comfort.",
-                "I'm not feeling well emotionally.",
-                "I need someone to talk to - feeling down."
+                "Something unexpected happened.",
+                "I'm surprised by this.",
+                "I didn't expect that."
             ]
-        elif 'distressed' in input_lower or 'fear' in input_lower or 'worried' in input_lower:
-            if urgency == 'critical':
-                responses = [
-                    "I'm terrified! Please stay with me!",
-                    "I'm very scared and need immediate reassurance!",
-                    "Help! I'm experiencing severe anxiety!"
-                ]
-            else:
-                responses = [
-                    "I'm feeling anxious and need reassurance.",
-                    "I'm worried about something.",
-                    "I'm scared - please help calm me down."
-                ]
-        elif 'frustrated' in input_lower or 'angry' in input_lower or 'tense' in input_lower:
+        elif 'blink' in input_lower and 'rapid' in input_lower:
             responses = [
-                "I'm feeling frustrated and need help.",
-                "Something is bothering me - please help.",
-                "I'm upset about the current situation."
+                "I'm trying to get your attention.",
+                "I need to communicate something.",
+                "Please pay attention to me."
             ]
-        elif 'frequent blinking' in input_lower or 'rapid' in input_lower:
-            count = 0
-            import re
-            match = re.search(r'(\d+) times', input_lower)
-            if match:
-                count = int(match.group(1))
-            
-            if count > 15:
-                responses = ["I need urgent attention - please help immediately!"]
-            else:
-                responses = [
-                    "I need urgent attention.",
-                    "Please look at me - I'm trying to communicate.",
-                    "I have something important to tell you."
-                ]
-        elif any(direction in input_lower for direction in ['gaze up', 'gaze down', 'gaze left', 'gaze right']):
-            if 'gaze up' in input_lower:
-                responses = ["Yes, that's correct.", "I agree.", "Please continue."]
-            elif 'gaze down' in input_lower:
-                responses = ["No, that's not right.", "I disagree.", "Please stop."]
-            elif 'gaze left' in input_lower:
-                responses = ["Look to my left please.", "Something on the left side.", "I need something from the left."]
-            elif 'gaze right' in input_lower:
-                responses = ["Look to my right please.", "Something on the right side.", "I need something from the right."]
-        elif 'eyes nearly closed' in input_lower:
+        elif 'gaze' in input_lower:
             responses = [
-                "I'm very tired.",
-                "I need to rest.",
-                "I'm feeling sleepy."
-            ]
-        elif 'eyes wide open' in input_lower:
-            responses = [
-                "I'm surprised!",
-                "Something unexpected happened!",
-                "I'm wide awake and alert."
-            ]
-        elif 'rapid eye movement' in input_lower:
-            responses = [
-                "I'm trying to tell you something important!",
-                "Please pay attention - this is urgent!",
-                "I need to communicate something complex."
+                "I'm looking at something important.",
+                "I'm trying to direct your attention.",
+                "I'm focusing on something."
             ]
         else:
             responses = [
-                "I need help communicating.",
-                "Please help me express myself.",
-                "I'm trying to tell you something."
+                "I'm trying to communicate with you.",
+                "I have something to tell you.",
+                "I need your attention."
             ]
         
+        # Use hash for consistent selection
         response_index = hash(biosignal_input) % len(responses)
         return responses[response_index]
     
@@ -501,20 +360,12 @@ Examples:
             cv2.imwrite(save_path, frame)
             print(f"  [OLLAMA VISION] Analyzing visual scene...")
             
-            vision_prompt = """You are analyzing a medical monitoring image. In 2-3 sentences, describe ONLY the patient's condition.
+            vision_prompt = """Describe what you see in this image in 2-3 sentences. Focus on:
+- The person's general appearance and position
+- Any objects or environment visible
+- Overall scene context
 
-IMPORTANT:
-- Focus ONLY on the patient (the person being monitored/cared for)
-- IGNORE medical staff, doctors, nurses, or their hands/equipment
-- If you see hands performing care, those belong to medical staff - do NOT describe them as patient body parts
-
-Describe only what's medically relevant:
-- Patient's visible discomfort or pain indicators
-- Patient's body position if problematic
-- Medical equipment attached to the patient that may be causing issues
-- Environmental factors affecting the patient's comfort
-
-Be extremely concise and specific to the patient's immediate needs."""
+Be factual and objective. Don't assume medical context unless clearly evident."""
             
             start_time = time.time()
             
@@ -1277,7 +1128,7 @@ class MedicalEmotionRecognizer:
         self.model_size = model_size
         self.enable_eye_tracking = enable_eye_tracking and MEDIAPIPE_AVAILABLE
         self.patient_condition = patient_condition
-        self.context = context or "medical monitoring"
+        self.context = context or "monitoring session"
         
         self.emotion_mode = CONFIG['emotion_mode']
         
@@ -1750,38 +1601,25 @@ class MedicalEmotionRecognizer:
         print("\n" + "🗣️" * 20 + "\n")
     
     def _generate_interpretation(self, pattern_result, comprehensive_data):
+        """Generate a simple interpretation without hardcoded medical assumptions"""
         triggers = pattern_result['triggers']
         primary_trigger = triggers[0]
         
         emotion = comprehensive_data['visual_data']['expression']['primary_emotion']
-        intensity = comprehensive_data['visual_data']['expression']['intensity']
         
+        # Simple, non-medical interpretations
         if primary_trigger['type'] == 'rapid_blinks':
-            return "I need urgent attention - please help me"
+            return "I'm trying to get attention"
         elif primary_trigger['type'] == 'sustained_emotion':
-            if emotion == 'fear' and intensity in ['severe', 'extreme']:
-                return "I'm experiencing severe distress and need immediate help"
-            elif emotion == 'sad':
-                return "I'm feeling very sad and would like some comfort"
-            elif emotion == 'happy':
-                return "I'm feeling happy - thank you for being here"
+            return f"I'm feeling {emotion} for a while now"
         elif primary_trigger['type'] == 'emotion_escalation':
-            return f"My {emotion} is getting worse - I need assistance"
-        elif primary_trigger['type'] == 'pain_signal':
-            return "I'm experiencing significant pain - please check on me immediately"
-        elif primary_trigger['type'] == 'sustained_distress':
-            if emotion == 'fear':
-                return "I'm frightened and need reassurance"
-            elif emotion == 'sad':
-                return "I'm feeling persistently sad - please help"
-            elif emotion == 'angry':
-                return "I'm frustrated about something - please help me communicate"
+            return f"My {emotion} feeling is getting stronger"
         elif primary_trigger['type'] == 'double_blink':
-            return "Yes, I understand"
+            return "I'm acknowledging something"
         elif primary_trigger['type'] == 'circular_gaze':
-            return "I'm trying to communicate something specific"
-        
-        return f"I'm feeling {emotion} and trying to communicate"
+            return "I'm looking around at something"
+        else:
+            return f"I'm experiencing {emotion} and trying to communicate"
     
     def _convert_numpy_to_list(self, obj):
         if isinstance(obj, np.ndarray):
@@ -2080,7 +1918,7 @@ def parse_arguments():
     parser.add_argument('--silent-voice', action='store_true', help='Use Silent Voice AI communication mode')
     parser.add_argument('--silent-voice-model', type=str, help='Path to trained Silent Voice model directory')
     parser.add_argument('--patient-condition', type=str, help='Patient medical condition (e.g., "ALS patient (advanced)")')
-    parser.add_argument('--context', type=str, default='hospital bed', help='Current context/environment (default: hospital bed)')
+    parser.add_argument('--context', type=str, default='monitoring session', help='Current context/environment (default: monitoring session)')
     return parser.parse_args()
 
 def main():
