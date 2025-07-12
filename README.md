@@ -34,6 +34,14 @@ A 2-second gaze becomes "I need help urgently." A slight jaw twitch means "Yes."
 
 **At its core**, Silent Voice is powered by a custom fine-tuned Gemma 3n model developed by 0xroyce specifically for medical communication scenarios. This model is the heart of the system - a neural translator that understands biosignals and speaks naturally, translating complex multimodal inputs into full sentences that express not just needs, but emotions, urgency, and context.
 
+HuggingFace: [https://github.com/0xroyce/silent-voice](https://huggingface.co/0xroyce/silent-voice-multimodal)
+
+### Video Demonstration
+
+[![Silent Voice Demo](https://i.vimeocdn.com/video/2036119078-c67bd1151b936d6a41352a0eb9cbf5ad7eeb04b7addb9f363dc50a98ea60464a-d_640x360?&region=us)](https://vimeo.com/1100812011)
+
+**[Vimeo: Fine-tuned Gemma 3n in Real-time Recognition](https://vimeo.com/1100812011)**
+
 ### Core Philosophy
 
 - **Patient-First Design**: Every feature is designed with paralysis patients' specific needs in mind
