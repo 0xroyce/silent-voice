@@ -176,9 +176,10 @@ class SilentVoiceIntegration:
         if yolo_class_name == 'happiness':
             base_desc = 'smile' if intensity in ['low', 'moderate'] else 'happy expression'
         elif yolo_class_name == 'pain':
-            base_desc = 'grimace' if intensity in ['high', 'extreme'] else 'discomfort'
+            # Don't hardcode pain/discomfort - let LLM interpret
+            base_desc = 'expression indicating strong feeling'
         elif yolo_class_name == 'distress':
-            base_desc = 'distressed look' if emotion_lower == 'fear' else 'frustrated expression'
+            base_desc = 'concerned expression' if emotion_lower == 'fear' else 'tense expression'
         elif yolo_class_name == 'concentration':
             base_desc = 'focused expression' if emotion_lower != 'surprise' else 'surprised look'
         else:
@@ -232,14 +233,13 @@ class SilentVoiceIntegration:
                 else:
                     desc_parts.append("visual focus on arm")
             
-            if 'uncomfortable' in visual_lower or 'discomfort' in visual_lower:
-                desc_parts.append("visible discomfort")
+            # Remove automatic pain/discomfort keywords - let the visual description speak for itself
             
             if 'position' in visual_lower:
-                desc_parts.append("positioning issue visible")
+                desc_parts.append("positioning noted")
             
             if 'iv' in visual_lower or 'equipment' in visual_lower:
-                desc_parts.append("equipment concern visible")
+                desc_parts.append("equipment noted")
             
             desc_parts.append(f"[Visual: {visual_context}]")
         
@@ -314,12 +314,20 @@ Keep responses SHORT (1-2 sentences max).
 Express YOUR immediate needs, feelings, or thoughts directly.
 Do NOT analyze or explain - just communicate what you need to say.
 
+IMPORTANT: Interpret emotions and expressions contextually. Not all intense expressions mean pain.
+- A strong expression could mean frustration, determination, or concentration
+- Consider the full context including gaze, visual scene, and patterns
+- Generate varied responses based on the specific situation
+
 Examples:
 - "I need water please."
 - "I'm feeling happy to see you."
 - "My back hurts, can you adjust my position?"
 - "Thank you, I'm comfortable now."
 - "I'm trying to remember something important."
+- "I'm concentrating on what you're saying."
+- "I'm frustrated but it's not physical pain."
+- "I need to tell you something important."
 """
             
             messages = [
