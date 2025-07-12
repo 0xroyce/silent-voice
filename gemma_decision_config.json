@@ -1,0 +1,10 @@
+{
+  "min_time_between_calls": 30.0,
+  "critical_override_time": 10.0,
+  "sustained_emotion_time": 45.0,
+  "max_calls_per_session": 20,
+  "enable_cost_optimization": true,
+  "enable_medical_rules": true,
+  "debug_mode": false,
+  "description": "Gemma 3n Decision Engine Configuration - Adjust these values to control AI call frequency"
+}

@@ -1,0 +1,24 @@
+# Core dependencies for YOLOv11 Emotion Recognition
+ultralytics
+opencv-python
+torch
+torchvision
+Pillow
+numpy
+
+# Advanced emotion recognition
+deepface
+tensorflow
+
+# Eye tracking dependencies
+mediapipe
+
+# Additional dependencies
+matplotlib
+tqdm
+PyYAML
+requests
+scipy
+
+# Model dependencies
+ollama
