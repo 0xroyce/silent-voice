@@ -1848,6 +1848,8 @@ class MedicalEmotionRecognizer:
         
         frame_count = 0
         current_faces = set()
+        analysis_start_time = None
+        startup_delay = 5.0  # 5-second delay before analysis starts
         
         try:
             while True:
@@ -1859,7 +1861,36 @@ class MedicalEmotionRecognizer:
                     frame = cv2.flip(frame, 1)
                 
                 timestamp = datetime.now()
+                session_time = (timestamp - self.session_start).total_seconds()
                 
+                # Check if we're still in the startup delay period
+                if analysis_start_time is None:
+                    if session_time >= startup_delay:
+                        analysis_start_time = timestamp
+                        print(f"✅ Analysis started after {startup_delay}s delay")
+                        print()
+                    else:
+                        # Show countdown on frame
+                        remaining = startup_delay - session_time
+                        countdown_text = f"Starting analysis in {remaining:.1f}s..."
+                        cv2.putText(frame, countdown_text, (10, 60),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+                        
+                        # Still show session info but skip face detection
+                        medical_info = f"Session: {session_time:.1f}s | Mode: {self.print_mode} | Waiting..."
+                        cv2.putText(frame, medical_info, (10, 30),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+                        
+                        cv2.imshow('Medical Emotion & Eye Tracking', frame)
+                        
+                        key = cv2.waitKey(1) & 0xFF
+                        if key == ord('q'):
+                            break
+                        
+                        frame_count += 1
+                        continue
+                
+                # Normal processing after delay
                 if psutil.cpu_percent() > 80:
                     time.sleep(0.05)
                 
