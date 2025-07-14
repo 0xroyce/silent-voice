@@ -114,6 +114,11 @@ The latest version includes significant enhancements:
 - Weighted confidence when emotions disagree
 - Most common emotion over buffer wins
 
+**New Multi-Modal Enhancements**:
+- Integrated heart rate monitoring as additional biosignal (simulated prototype, extendable to hardware)
+- Data augmentation in training for diverse populations (skin tones, lighting, angles)
+- Predictive analytics using LSTM for emotion trend forecasting
+
 ---
 
 ## Key Features
