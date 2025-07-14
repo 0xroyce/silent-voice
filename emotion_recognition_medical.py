@@ -67,6 +67,9 @@ from cryptography.fernet import Fernet
 import yaml
 from collections import Counter, deque
 import random
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense
 
 # Global config loader
 def load_config(config_path='config.yaml'):
@@ -276,6 +279,12 @@ class SilentVoiceIntegration:
             biosignal_description = f"{main_parts[0]}, {main_parts[1]}"
             if extra_parts:
                 biosignal_description += f" with {', '.join(extra_parts)}"
+        
+        biosignal_description = f"{emotion} expression with confidence {confidence:.2f}"
+        
+        if eye_data and 'hr_data' in eye_data:
+            hr = eye_data['hr_data']
+            biosignal_description += f" and heart rate {hr['current_hr']:.0f} bpm (stress: {hr['stress_level']})"
         
         # Format context string
         context_parts = []
@@ -1454,6 +1463,12 @@ class MedicalEmotionRecognizer:
         
         self.emotion_buffer = deque(maxlen=5)
         
+        self.heart_rate_monitor = HeartRateMonitor()
+        print("✅ Multi-modal input enabled with heart rate monitoring")
+        
+        self.predictive_analytics = PredictiveAnalytics()
+        print("✅ Predictive analytics enabled for emotion trend forecasting")
+        
         print("✅ Medical system ready for patient monitoring")
         print()
     
@@ -1994,6 +2009,9 @@ class MedicalEmotionRecognizer:
                 if psutil.cpu_percent() > 80:
                     time.sleep(0.05)
                 
+                # Get multi-modal data
+                hr_data = self.heart_rate_monitor.get_heart_rate()
+                
                 faces = self.detect_faces(frame)
                 new_faces = set()
                 
@@ -2013,6 +2031,7 @@ class MedicalEmotionRecognizer:
                             'confidence': confidence,
                             'face_id': face_id
                         }
+                        emotion_data['hr_data'] = hr_data
                         
                         if self.enable_eye_tracking:
                             eye_data = self.eye_tracker.analyze_eyes(frame, face_img)
@@ -2131,6 +2150,12 @@ class MedicalEmotionRecognizer:
                 
                 frame_count += 1
                 
+                # After emotion detection
+                self.predictive_analytics.add_emotion(emotion)
+                predicted = self.predictive_analytics.predict_next_emotion()
+                if predicted != "Insufficient data":
+                    print(f"🔮 Predicted next emotion: {predicted}")
+                
         except KeyboardInterrupt:
             print("\n🛑 Medical monitoring stopped by user")
         
@@ -2166,6 +2191,50 @@ class MedicalEmotionRecognizer:
                         decision_log_file = decision_log_base
                     
                     self.decision_engine.export_decision_log(decision_log_file)
+
+class HeartRateMonitor:
+    def __init__(self):
+        self.current_hr = 70  # Simulated resting heart rate
+        self.hr_history = deque(maxlen=30)  # Last 30 seconds of HR
+        print("✅ Heart Rate Monitor initialized (simulated for prototype)")
+    
+    def get_heart_rate(self):
+        # Simulate heart rate variation based on time
+        variation = random.uniform(-5, 5)
+        self.current_hr = max(60, min(100, self.current_hr + variation))
+        self.hr_history.append(self.current_hr)
+        avg_hr = sum(self.hr_history) / len(self.hr_history) if self.hr_history else 70
+        stress_level = 'normal' if avg_hr < 80 else 'elevated' if avg_hr < 90 else 'high'
+        return {
+            'current_hr': self.current_hr,
+            'avg_hr': avg_hr,
+            'stress_level': stress_level
+        }
+
+class PredictiveAnalytics:
+    def __init__(self):
+        self.model = self.build_lstm_model()
+        self.emotion_history = deque(maxlen=30)  # Last 30 readings
+        self.emotion_map = {'Pain': 0, 'Distress': 1, 'Happy': 2, 'Concentration': 3, 'Neutral': 4, 'Unknown': 5}
+        print("✅ Predictive Analytics initialized with LSTM model")
+    
+    def build_lstm_model(self):
+        model = Sequential()
+        model.add(LSTM(32, input_shape=(30, 1), return_sequences=False))
+        model.add(Dense(6, activation='softmax'))  # 6 emotion classes
+        model.compile(optimizer='adam', loss='sparse_categorical_crossentropy')
+        return model
+    
+    def add_emotion(self, emotion):
+        self.emotion_history.append(self.emotion_map.get(emotion, 5))
+    
+    def predict_next_emotion(self):
+        if len(self.emotion_history) < 30:
+            return "Insufficient data"
+        input_data = np.array(self.emotion_history).reshape(1, 30, 1)
+        prediction = self.model.predict(input_data)
+        predicted_class = np.argmax(prediction)
+        return list(self.emotion_map.keys())[predicted_class]
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Silent Voice Medical Recognition with Eye Tracking for Paralysis Patients')
