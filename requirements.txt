@@ -22,3 +22,5 @@ scipy
 
 # Model dependencies
 ollama
+tensorflow
+heartpy
