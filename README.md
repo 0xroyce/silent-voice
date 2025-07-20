@@ -218,6 +218,9 @@ python setup.py
 # 2. Download the Silent Voice AI model (REQUIRED)
 ollama run hf.co/0xroyce/silent-voice-multimodal
 
+Optional to download model for evaluation:
+ollama run hf.co/unsloth/gemma-3n-E4B-it-GGUF:Q4_K_M
+
 # 3. Run demo
 python launch_silent_voice.py --demo --video patient_1.mp4
 ```
