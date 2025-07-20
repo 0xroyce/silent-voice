@@ -439,6 +439,447 @@ Respond directly with your message, no analysis or explanation."""
             
             response = ''
             for chunk in stream:
+                response += chunk['message']['content']#!/usr/bin/env python3
+"""
+Silent Voice Medical Recognition with Eye Tracking
+Advanced system for paralysis patients with Silent Voice AI integration.
+Combines YOLO detection with trained Gemma 3n model for biosignal communication.
+"""
+
+import cv2
+import numpy as np
+from ultralytics import YOLO
+import time
+import sys
+import argparse
+import os
+import warnings
+import json
+from datetime import datetime, timedelta
+import math
+warnings.filterwarnings("ignore")
+
+# Try to import required libraries
+try:
+    from deepface import DeepFace
+    DEEPFACE_AVAILABLE = True
+except ImportError:
+    DEEPFACE_AVAILABLE = False
+    print("⚠️  DeepFace not available - emotion recognition will be limited")
+
+try:
+    import mediapipe as mp
+    MEDIAPIPE_AVAILABLE = True
+except ImportError:
+    MEDIAPIPE_AVAILABLE = False
+    print("⚠️  MediaPipe not available - eye tracking will be disabled")
+    print("Install with: pip install mediapipe")
+
+# Try to import transformers for Silent Voice model
+try:
+    import torch
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+    TRANSFORMERS_AVAILABLE = True
+except ImportError:
+    TRANSFORMERS_AVAILABLE = False
+    print("⚠️  Transformers not available - Silent Voice model disabled")
+    print("Install with: pip install torch transformers")
+
+# Try to import the decision engine
+try:
+    from gemma_decision_engine import GemmaDecisionEngine, Priority
+    DECISION_ENGINE_AVAILABLE = True
+except ImportError:
+    DECISION_ENGINE_AVAILABLE = False
+    print("⚠️  Decision engine not available - using simple throttling")
+
+try:
+    import ollama
+    OLLAMA_AVAILABLE = True
+except ImportError:
+    OLLAMA_AVAILABLE = False
+    print("⚠️  Ollama not installed. Install with: pip install ollama")
+
+# New imports for improvements
+import threading
+import queue
+import psutil
+from cryptography.fernet import Fernet
+import yaml
+from collections import Counter, deque
+import random
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense
+
+# Global config loader
+def load_config(config_path='config.yaml'):
+    if os.path.exists(config_path):
+        with open(config_path, 'r') as f:
+            return yaml.safe_load(f)
+    return {
+        'blink_threshold': 0.2,
+        'mouth_open_threshold': 0.08,
+        'emotion_sustain_threshold': 2.0,
+        'high_confidence_threshold': 0.7,
+        'rapid_blink_window': 3.0,
+        'rapid_blink_count': 5,
+        'gaze_pattern_window': 5.0,
+        'confidence_threshold': 0.3,
+        'emotion_mode': 'deepface',
+        'print_mode': 'medical',
+        'alert_threshold': 10.0,
+        'communication_patterns': {
+            'urgent_attention': {'rapid_blinks': 5, 'emotion': ['fear', 'distress'], 'confidence': 0.7},
+            'pain_signal': {'sustained_emotion': ['fear', 'sad', 'angry'], 'duration': 3.0, 'confidence': 0.6},
+            'acknowledgment': {'blinks': 2, 'window': 1.0, 'emotion': ['neutral', 'happy']},
+            'distress_escalation': {'emotion_sequence': ['sad', 'fear'], 'intensity_increase': True, 'duration': 5.0}
+        }
+    }
+
+CONFIG = load_config()
+
+class SilentVoiceIntegration:
+    def __init__(self, model_path=None, device='auto'):
+        self.model = None
+        self.tokenizer = None
+        self.device = device
+        
+        if not TRANSFORMERS_AVAILABLE:
+            print("⚠️  Silent Voice integration disabled - transformers not available")
+            return
+        
+        if model_path and os.path.exists(model_path):
+            try:
+                print(f"🧠 Loading Silent Voice model from: {model_path}")
+                self.tokenizer = AutoTokenizer.from_pretrained(model_path)
+                self.model = AutoModelForCausalLM.from_pretrained(model_path)
+                
+                if device == 'auto':
+                    self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+                else:
+                    self.device = device
+                
+                self.model.to(self.device)
+                print(f"✅ Silent Voice model loaded on {self.device}")
+            except Exception as e:
+                print(f"❌ Error loading Silent Voice model: {e}")
+                self.model = None
+                self.tokenizer = None
+        
+        self.model_name = 'hf.co/0xroyce/silent-voice-multimodal'
+        if OLLAMA_AVAILABLE:
+            print(f"🧠 Using Ollama model: {self.model_name}")
+        else:
+            print("⚠️  Ollama not available - will use fallback responses")
+    
+    def emotion_to_biosignal(self, emotion, confidence, eye_data=None, context=None, patient_condition=None, visual_context=None):
+        """
+        Generate rich biosignal data matching the fine-tuned model's training format.
+        This creates nuanced descriptions similar to the training dataset.
+        """
+        import random
+        
+        # Determine signal type based on what's detected
+        signal_types = []
+        if emotion and confidence > 0.3:
+            signal_types.append("facial")
+        if eye_data and (eye_data.get('gaze_direction') != 'CENTER' or eye_data.get('is_blinking') or eye_data.get('eye_movement_velocity', 0) > 0.5):
+            signal_types.append("eye_movement")
+        if eye_data and 'facial_landmarks' in eye_data:
+            mouth = eye_data['facial_landmarks'].get('mouth', {})
+            if mouth.get('state') == 'open' or mouth.get('openness', 0) > 0.1:
+                signal_types.append("muscle")
+        
+        signal_type = signal_types[0] if signal_types else "facial"
+        
+        # Generate rich biosignal description
+        biosignal_parts = []
+        
+        # Emotion-based descriptions with nuance
+        if emotion.lower() == 'happy':
+            if confidence > 0.8:
+                descriptors = ["Bright smile", "Beaming expression", "Clear happiness"]
+            elif confidence > 0.6:
+                descriptors = ["Slight smile", "Pleasant expression", "Soft smile"]
+            else:
+                descriptors = ["Hint of smile", "Subtle upturn of lips", "Faint smile"]
+        elif emotion.lower() == 'sad':
+            if confidence > 0.8:
+                descriptors = ["Deep sadness in eyes", "Downturned expression", "Sorrowful look"]
+            elif confidence > 0.6:
+                descriptors = ["Melancholy expression", "Slight frown", "Sad eyes"]
+            else:
+                descriptors = ["Subtle sadness", "Slight downturn", "Hint of melancholy"]
+        elif emotion.lower() == 'fear':
+            if confidence > 0.8:
+                descriptors = ["Wide-eyed fear", "Alarmed expression", "Fearful look"]
+            elif confidence > 0.6:
+                descriptors = ["Worried expression", "Anxious look", "Concerned face"]
+            else:
+                descriptors = ["Slight worry", "Hint of concern", "Mild anxiety"]
+        elif emotion.lower() == 'angry':
+            if confidence > 0.8:
+                descriptors = ["Furrowed brow (frustration)", "Tense facial muscles", "Angry expression"]
+            elif confidence > 0.6:
+                descriptors = ["Frustrated look", "Tightened jaw", "Annoyed expression"]
+            else:
+                descriptors = ["Slight tension", "Mild frustration", "Hint of annoyance"]
+        elif emotion.lower() == 'surprise':
+            if confidence > 0.8:
+                descriptors = ["Eyes wide with surprise", "Startled expression", "Shocked look"]
+            elif confidence > 0.6:
+                descriptors = ["Surprised look", "Raised eyebrows", "Unexpected reaction"]
+            else:
+                descriptors = ["Slight surprise", "Mild reaction", "Subtle startle"]
+        elif emotion.lower() == 'disgust':
+            descriptors = ["Wrinkled nose", "Disgusted expression", "Repulsed look"]
+        else:  # neutral
+            descriptors = ["Calm expression", "Neutral face", "Relaxed features"]
+        
+        biosignal_parts.append(random.choice(descriptors))
+        
+        # Add eye-specific descriptions
+        if eye_data:
+            # Gaze patterns
+            gaze_dir = eye_data.get('gaze_direction', 'CENTER')
+            if gaze_dir != 'CENTER':
+                if gaze_dir in ['UP', 'UP-LEFT', 'UP-RIGHT']:
+                    biosignal_parts.append("Looking upward")
+                elif gaze_dir in ['DOWN', 'DOWN-LEFT', 'DOWN-RIGHT']:
+                    biosignal_parts.append("Downcast gaze")
+                elif 'LEFT' in gaze_dir:
+                    biosignal_parts.append("Glancing left")
+                elif 'RIGHT' in gaze_dir:
+                    biosignal_parts.append("Looking to the right")
+            
+            # Blink patterns
+            if eye_data.get('is_blinking'):
+                biosignal_parts.append("Mid-blink")
+            elif eye_data.get('blink_count', 0) > 5:
+                biosignal_parts.append(f"Rapid blinking for {eye_data['blink_count']/10:.0f}s")
+            
+            # Eye movement
+            velocity = eye_data.get('eye_movement_velocity', 0)
+            if velocity > 1.0:
+                biosignal_parts.append("Jerky eye movements")
+            elif velocity > 0.5:
+                biosignal_parts.append("Quick eye movements")
+            
+            # Eye openness
+            if 'facial_landmarks' in eye_data:
+                left_eye = eye_data['facial_landmarks']['left_eye']
+                right_eye = eye_data['facial_landmarks']['right_eye']
+                
+                if left_eye['openness'] < 0.3 and right_eye['openness'] < 0.3:
+                    biosignal_parts.append("Squinting slightly")
+                elif left_eye['openness'] > 0.9 or right_eye['openness'] > 0.9:
+                    biosignal_parts.append("Eyes wide")
+                
+                # Check for asymmetry
+                if abs(left_eye['openness'] - right_eye['openness']) > 0.3:
+                    biosignal_parts.append("Asymmetric eye opening")
+                
+                # Mouth state
+                mouth = eye_data['facial_landmarks']['mouth']
+                if mouth['state'] == 'open' and mouth['openness'] > 0.5:
+                    biosignal_parts.append("Mouth open wide")
+                elif mouth['state'] == 'open' and mouth['openness'] > 0.25:
+                    biosignal_parts.append("Mouth slightly parted")
+                elif mouth['openness'] > 0.1:
+                    biosignal_parts.append("Lips parted")
+                
+                # Check for muscle tension
+                if mouth.get('mar', 0) < 0.05 and emotion.lower() in ['angry', 'fear']:
+                    biosignal_parts.append("Jaw clenched")
+        
+        # Determine urgency level
+        if emotion.lower() in ['fear', 'angry', 'sad'] and confidence > 0.8:
+            urgency_level = "high"
+        elif emotion.lower() in ['fear', 'angry', 'sad'] and confidence > 0.5:
+            urgency_level = "medium"
+        else:
+            urgency_level = "low"
+        
+        # Special patterns
+        if eye_data and eye_data.get('blink_count', 0) > 10:
+            urgency_level = "high"
+        
+        # Is this a simple query?
+        is_simple = len(biosignal_parts) <= 2 and urgency_level == "low"
+        
+        # Create biosignal description
+        if len(biosignal_parts) == 1:
+            biosignal_description = biosignal_parts[0]
+        elif len(biosignal_parts) == 2:
+            biosignal_description = f"{biosignal_parts[0]}, {biosignal_parts[1]}"
+        else:
+            # Natural combination of descriptions
+            main_parts = biosignal_parts[:2]
+            extra_parts = biosignal_parts[2:]
+            biosignal_description = f"{main_parts[0]}, {main_parts[1]}"
+            if extra_parts:
+                biosignal_description += f" with {', '.join(extra_parts)}"
+        
+        biosignal_description = f"{emotion} expression with confidence {confidence:.2f}"
+        
+        if eye_data and 'hr_data' in eye_data:
+            hr = eye_data['hr_data']
+            biosignal_description += f" and heart rate {hr['current_hr']:.0f} bpm (stress: {hr['stress_level']})"
+        
+        # Format context string
+        context_parts = []
+        if context:
+            context_parts.append(context)
+        if patient_condition:
+            # Extract condition type
+            condition_map = {
+                "ALS": "ALS",
+                "spinal": "spinal_cord_injury",
+                "stroke": "stroke",
+                "cerebral": "cerebral_palsy",
+                "locked": "locked_in_syndrome",
+                "ICU": "critical_care"
+            }
+            
+            medical_condition = None
+            for key, value in condition_map.items():
+                if key.lower() in patient_condition.lower():
+                    medical_condition = value
+                    break
+            
+            if not medical_condition:
+                medical_condition = "general_monitoring"
+            
+            context_parts.append(patient_condition)
+        
+        context_str = ", ".join(context_parts) if context_parts else ""
+        
+        # Build structured data matching training format
+        structured_data = {
+            "biosignal_description": biosignal_description,
+            "context": context_str,
+            "is_simple_query": is_simple,
+            "medical_condition": medical_condition if patient_condition else None,
+            "signal_type": signal_type,
+            "urgency_level": urgency_level,
+            "visual_data": None
+        }
+        
+        # Add visual data if available
+        if eye_data and 'facial_landmarks' in eye_data:
+            landmarks = eye_data['facial_landmarks']
+            structured_data["visual_data"] = {
+                "expression": {
+                    "confidence": confidence,
+                    "intensity": "high" if confidence > 0.8 else "moderate" if confidence > 0.5 else "low",
+                    "primary_emotion": emotion.lower()
+                },
+                "facial_landmarks": {
+                    "left_eye": landmarks['left_eye']['center'],
+                    "right_eye": landmarks['right_eye']['center'],
+                    "mouth": landmarks['mouth']['center']
+                }
+            }
+        
+        # Create model input in conversational format
+        model_input = f'{{ "content": "Biosignal: {biosignal_description}'
+        if context_str:
+            model_input += f'\\nContext: {context_str}'
+        if urgency_level != "low":
+            model_input += f'\\nUrgency: {urgency_level}'
+        model_input += '", "role": "user" },'
+        
+        # Also support simple format for variety
+        if is_simple or random.random() < 0.3:
+            model_input = f"Biosignal: {biosignal_description}"
+        
+        # Add visual context if available
+        if visual_context:
+            # Append visual observation naturally
+            if "Biosignal:" in model_input:
+                model_input = model_input.replace(
+                    f"Biosignal: {biosignal_description}",
+                    f"Biosignal: {biosignal_description}\\nVisual: {visual_context}"
+                )
+            else:
+                model_input += f"\\nVisual: {visual_context}"
+        
+        log_data = {
+            'biosignal_description': biosignal_description,
+            'context': context_str,
+            'is_simple_query': is_simple,
+            'medical_condition': medical_condition if patient_condition else None,
+            'signal_type': signal_type,
+            'urgency_level': urgency_level,
+            'original_emotion': emotion,
+            'confidence': confidence,
+            'model_input': model_input,
+            'visual_data': structured_data.get('visual_data')
+        }
+        
+        return model_input, log_data
+    
+    def _determine_urgency(self, emotion, confidence, intensity):
+        """This method is now unused - urgency is determined by AI"""
+        return None
+    
+    def generate_response(self, biosignal_input, log_data=None):
+        if not OLLAMA_AVAILABLE:
+            response = self._generate_fallback_response(biosignal_input)
+            return response, {
+                'model_loaded': False,
+                'response_type': 'fallback_no_ollama',
+                'response': response
+            }
+        
+        try:
+            enhanced_input = biosignal_input
+            
+            print(f"  [OLLAMA] Generating response for biosignal with integrated visual context ({len(enhanced_input)} chars)...")
+            start_time = time.time()
+            
+            system_prompt = """You are a person communicating through biosignals - facial expressions, eye movements, and subtle body language.
+
+Based on the biosignal description provided, respond in FIRST PERSON with what you want to communicate.
+
+Guidelines:
+- Respond naturally as if you're the person experiencing these signals
+- Keep responses concise (1-2 sentences) unless the urgency is high
+- Match your response to the signal intensity and urgency level
+- Consider the context (medical condition, location) when forming responses
+- For simple queries, give simple responses
+- For complex signals, express the underlying need or feeling
+
+Signal interpretation examples:
+- "Squinting slightly" → Could indicate discomfort, concentration, or difficulty seeing
+- "Rapid blinking for 3s" → Urgent communication attempt 
+- "Furrowed brow (frustration)" → Expressing difficulty or annoyance
+- "Tense facial muscles" → Physical or emotional distress
+- "Asymmetric muscle activation" → Possible physical limitation affecting one side
+- "Jerky eye movements" → Difficulty controlling movements, possible neurological
+
+Context matters:
+- In ICU: Focus on immediate medical needs
+- Therapy room: Related to treatment or exercises
+- Early morning: Could relate to sleep, medication timing
+- With specific conditions (ALS, stroke, etc.): Consider typical challenges
+
+Respond directly with your message, no analysis or explanation."""
+            
+            messages = [
+                {'role': 'system', 'content': system_prompt},
+                {'role': 'user', 'content': enhanced_input}
+            ]
+            
+            stream = ollama.chat(
+                model=self.model_name,
+                messages=messages,
+                stream=True,
+            )
+            
+            response = ''
+            for chunk in stream:
                 response += chunk['message']['content']
             
             generation_time = time.time() - start_time
