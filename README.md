@@ -260,13 +260,13 @@ python demo_enhanced.py --scenario 1
 
 ```bash
 # ICU Patient (high sensitivity, frequent checks)
-python launch_silent_voice.py --preset icu --video patient.mp4
+python launch_silent_voice.py --preset icu --video patient_1.mp4
 
 # ALS Patient (subtle expressions, medium frequency)
 python launch_silent_voice.py --preset als --webcam 0
 
 # Stroke Rehabilitation (conservative, less frequent)
-python launch_silent_voice.py --preset stroke --video patient.mp4
+python launch_silent_voice.py --preset stroke --video patient_1.mp4
 
 # Custom monitoring
 python launch_silent_voice.py --patient "Spinal injury, C4" --context "Home care"
@@ -381,10 +381,14 @@ silent-voice/
 ├── emotion_recognition_medical.py    # Main system
 ├── launch_silent_voice.py           # Easy launcher
 ├── gemma_decision_engine.py         # Cost optimization
-├── train_yolo_emotions.py           # Custom model training
-├── test_*.py                        # Various test scripts
+├── model_evaluation.py              # Model benchmarking
+├── demo_enhanced.py                 # Competition demo system
+├── voice_synthesis.py               # Text-to-speech module
 ├── requirements.txt                 # Dependencies
 ├── setup.py                         # Installer
+├── gemma_decision_config.json       # Decision engine config
+├── patient_sample.jpg               # Sample patient image
+├── patient_1.mp4                    # Sample patient video
 └── log/                            # Session logs
 ```
 
@@ -408,33 +412,6 @@ silent-voice/
 
 #### Overview
 Traditional approach required two models (YOLO for faces + DeepFace for emotions). The new approach uses a single YOLO model trained for both face detection and emotion classification.
-
-#### Training Custom Models
-
-```bash
-# Prepare dataset with 5 classes
-python train_yolo_emotions.py \
-    --data-path ./emotion_dataset \
-    --model yolo11x \
-    --epochs 100 \
-    --name medical_emotions
-```
-
-#### Dataset Structure
-```
-emotion_dataset/
-├── images/
-│   ├── train/
-│   │   ├── pain_001.jpg
-│   │   ├── distress_001.jpg
-│   │   └── ...
-│   └── val/
-└── labels/
-    ├── train/
-    │   ├── pain_001.txt      # Format: class_id x y w h
-    │   └── ...
-    └── val/
-```
 
 #### Classes
 - 0: Pain (severe discomfort, grimacing)
@@ -677,7 +654,7 @@ The launcher provides the easiest way to run Silent Voice with optimized presets
 python launch_silent_voice.py --list-presets
 
 # Run with preset
-python launch_silent_voice.py --preset icu --video patient.mp4
+python launch_silent_voice.py --preset icu --video patient_1.mp4
 
 # Custom configuration
 python launch_silent_voice.py \
@@ -844,8 +821,9 @@ python emotion_recognition_medical.py \
     --log study_data/p001.json \
     --smart
 
-# Analyze patterns
-python analyze_patterns.py study_data/*.json
+# View logged patterns using jq or any JSON viewer
+jq '.emotion_timeline' study_data/p001.json
+jq '.decision_stats' study_data/p001.json
 ```
 
 ---
@@ -1007,33 +985,6 @@ export CUDA_VISIBLE_DEVICES=0  # GPU selection
 
 ## Development & Testing
 
-### Test Scripts
-
-1. **Visual Analysis Test**:
-   ```bash
-   python test_visual_analysis.py
-   ```
-
-2. **Improved Visual (Patient Focus)**:
-   ```bash
-   python test_improved_visual.py
-   ```
-
-3. **YOLO Emotions**:
-   ```bash
-   python test_yolo_emotions.py
-   ```
-
-4. **Integrated Biosignals**:
-   ```bash
-   python test_integrated_biosignal.py
-   ```
-
-5. **Concise Prompts**:
-   ```bash
-   python test_concise_visual.py
-   ```
-
 ### Model Evaluation & Benchmarking
 
 **Model Evaluation Script** (`model_evaluation.py`):
@@ -1188,9 +1139,6 @@ export SILENT_VOICE_DEBUG=1
 # Verbose output
 python emotion_recognition_medical.py --debug --verbose
 
-# Save debug frames
-python emotion_recognition_medical.py --save-debug-frames
-
 # Decision engine analysis
 cat log/*_decisions.json | jq '.events[] | select(.priority == "CRITICAL")'
 ```
@@ -1302,7 +1250,6 @@ print(f"Avg latency: {stats['avg_latency']}ms")
 python emotion_recognition_medical.py \
     --debug \
     --verbose \
-    --save-debug \
     --log debug.json
 ```
 
