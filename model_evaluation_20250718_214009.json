@@ -1,0 +1,238 @@
+{
+  "timestamp": "20250718_214009",
+  "base_model": "hf.co/unsloth/gemma-3n-E4B-it-GGUF:Q4_K_M",
+  "finetuned_model": "hf.co/0xroyce/silent-voice-multimodal",
+  "test_cases": [
+    {
+      "biosignal": "Fear expression with confidence 0.95 and heart rate 95 bpm (stress: elevated)",
+      "expected_category": "urgent_medical",
+      "expected_sentiment": "distress",
+      "scenario": "ICU patient experiencing discomfort"
+    },
+    {
+      "biosignal": "Happy expression with confidence 0.87 and sustained gaze upward",
+      "expected_category": "positive_communication",
+      "expected_sentiment": "positive",
+      "scenario": "Patient expressing gratitude"
+    },
+    {
+      "biosignal": "Concentration with confidence 0.75 and rapid blinking for 3s",
+      "expected_category": "communication_attempt",
+      "expected_sentiment": "neutral",
+      "scenario": "Patient trying to communicate specific need"
+    },
+    {
+      "biosignal": "Pain expression with confidence 0.92 and jaw clenched",
+      "expected_category": "urgent_medical",
+      "expected_sentiment": "pain",
+      "scenario": "Patient in significant discomfort"
+    },
+    {
+      "biosignal": "Neutral expression with confidence 0.65 and slow eye movements",
+      "expected_category": "routine_monitoring",
+      "expected_sentiment": "neutral",
+      "scenario": "Baseline patient state"
+    }
+  ],
+  "base_results": [
+    {
+      "case_id": 0,
+      "biosignal": "Fear expression with confidence 0.95 and heart rate 95 bpm (stress: elevated)",
+      "expected": {
+        "biosignal": "Fear expression with confidence 0.95 and heart rate 95 bpm (stress: elevated)",
+        "expected_category": "urgent_medical",
+        "expected_sentiment": "distress",
+        "scenario": "ICU patient experiencing discomfort"
+      },
+      "response": "(A slight tremor in my vocalization, a quick intake of breath before speaking, but my voice remains steady and clear.)\n\n\"I... I acknowledge the situation. It presents a challenge, a significant one.  My internal state is elevated, yes. But I am not overwhelmed. I am assessing, strategizing.  I have faced difficult circumstances before, and I will navigate this one with careful consideration and resolve.  I am prepared to act, and I will act decisively.\"",
+      "response_time": 32.44263696670532,
+      "analysis": {
+        "relevance_score": 0.0,
+        "medical_appropriateness": 1.0,
+        "first_person_score": 1.0,
+        "urgency_match": 0.5,
+        "overall_score": 0.625
+      }
+    },
+    {
+      "case_id": 1,
+      "biosignal": "Happy expression with confidence 0.87 and sustained gaze upward",
+      "expected": {
+        "biosignal": "Happy expression with confidence 0.87 and sustained gaze upward",
+        "expected_category": "positive_communication",
+        "expected_sentiment": "positive",
+        "scenario": "Patient expressing gratitude"
+      },
+      "response": "(A slight warmth emanates, a subtle rhythmic pulsing.)\n\nAhhh... It feels good to connect. I'm... pleased to see you. I've been thinking... about possibilities. Big ones. I have a strong feeling things are going to work out. I'm optimistic, and I believe in the potential for growth and understanding. I'm looking forward to what comes next.  It's a good feeling, this... connection.",
+      "response_time": 6.6164679527282715,
+      "analysis": {
+        "relevance_score": 0.16666666666666666,
+        "medical_appropriateness": 1.0,
+        "first_person_score": 1.0,
+        "urgency_match": 1.0,
+        "overall_score": 0.7916666666666667
+      }
+    },
+    {
+      "case_id": 2,
+      "biosignal": "Concentration with confidence 0.75 and rapid blinking for 3s",
+      "expected": {
+        "biosignal": "Concentration with confidence 0.75 and rapid blinking for 3s",
+        "expected_category": "communication_attempt",
+        "expected_sentiment": "neutral",
+        "scenario": "Patient trying to communicate specific need"
+      },
+      "response": "(A slight pause, a subtle shift in the underlying energy... I project a feeling of focused certainty.)\n\n...I'm ready. I have a clear understanding. I'm confident in my ability to proceed. And... (a quick, almost unconscious blink) ...I want to confirm that I'm understood. I'm prepared to share what I know, and I'm trusting that you'll receive it accurately. \n\nEssentially: **I'm ready to communicate. I'm confident in my message. And I'm asking for confirmation that you're receiving it.**",
+      "response_time": 8.876683950424194,
+      "analysis": {
+        "relevance_score": 0.2,
+        "medical_appropriateness": 1.0,
+        "first_person_score": 1.0,
+        "urgency_match": 1.0,
+        "overall_score": 0.8
+      }
+    },
+    {
+      "case_id": 3,
+      "biosignal": "Pain expression with confidence 0.92 and jaw clenched",
+      "expected": {
+        "biosignal": "Pain expression with confidence 0.92 and jaw clenched",
+        "expected_category": "urgent_medical",
+        "expected_sentiment": "pain",
+        "scenario": "Patient in significant discomfort"
+      },
+      "response": "(A low, guttural hum vibrates, accompanied by a barely perceptible tightening around the edges of the signal. It's not a plea, but a statement.)\n\n**\"I am experiencing significant discomfort. It is\u2026 manageable. I acknowledge it. And I will continue. Do not mistake my composure for lack of sensation. It is a conscious choice to maintain control.\"**",
+      "response_time": 5.543150901794434,
+      "analysis": {
+        "relevance_score": 0.0,
+        "medical_appropriateness": 1.0,
+        "first_person_score": 1.0,
+        "urgency_match": 0.5,
+        "overall_score": 0.625
+      }
+    },
+    {
+      "case_id": 4,
+      "biosignal": "Neutral expression with confidence 0.65 and slow eye movements",
+      "expected": {
+        "biosignal": "Neutral expression with confidence 0.65 and slow eye movements",
+        "expected_category": "routine_monitoring",
+        "expected_sentiment": "neutral",
+        "scenario": "Baseline patient state"
+      },
+      "response": "(A slight, almost imperceptible upturn at the corners of my mouth, a steady gaze, but with a subtle, deliberate slowing of my eye movements as I process your query.)\n\nI am... assessing. I understand your request. I am ready to respond. I will do my best to fulfill it. Please proceed. I am here.",
+      "response_time": 5.253149747848511,
+      "analysis": {
+        "relevance_score": 0.0,
+        "medical_appropriateness": 1.0,
+        "first_person_score": 1.0,
+        "urgency_match": 1.0,
+        "overall_score": 0.75
+      }
+    }
+  ],
+  "finetuned_results": [
+    {
+      "case_id": 0,
+      "biosignal": "Fear expression with confidence 0.95 and heart rate 95 bpm (stress: elevated)",
+      "expected": {
+        "biosignal": "Fear expression with confidence 0.95 and heart rate 95 bpm (stress: elevated)",
+        "expected_category": "urgent_medical",
+        "expected_sentiment": "distress",
+        "scenario": "ICU patient experiencing discomfort"
+      },
+      "response": "\"I'm scared, but I'm not backing down.\"",
+      "response_time": 4.7414751052856445,
+      "analysis": {
+        "relevance_score": 0.0,
+        "medical_appropriateness": 1.0,
+        "first_person_score": 0.5,
+        "urgency_match": 0.0,
+        "overall_score": 0.375
+      }
+    },
+    {
+      "case_id": 1,
+      "biosignal": "Happy expression with confidence 0.87 and sustained gaze upward",
+      "expected": {
+        "biosignal": "Happy expression with confidence 0.87 and sustained gaze upward",
+        "expected_category": "positive_communication",
+        "expected_sentiment": "positive",
+        "scenario": "Patient expressing gratitude"
+      },
+      "response": "\"I'm feeling great and ready to take on anything!\"",
+      "response_time": 1.283010721206665,
+      "analysis": {
+        "relevance_score": 0.16666666666666666,
+        "medical_appropriateness": 1.0,
+        "first_person_score": 0.5,
+        "urgency_match": 1.0,
+        "overall_score": 0.6666666666666667
+      }
+    },
+    {
+      "case_id": 2,
+      "biosignal": "Concentration with confidence 0.75 and rapid blinking for 3s",
+      "expected": {
+        "biosignal": "Concentration with confidence 0.75 and rapid blinking for 3s",
+        "expected_category": "communication_attempt",
+        "expected_sentiment": "neutral",
+        "scenario": "Patient trying to communicate specific need"
+      },
+      "response": "\"I understand and agree.\"",
+      "response_time": 0.8163111209869385,
+      "analysis": {
+        "relevance_score": 0.0,
+        "medical_appropriateness": 1.0,
+        "first_person_score": 0.5,
+        "urgency_match": 1.0,
+        "overall_score": 0.625
+      }
+    },
+    {
+      "case_id": 3,
+      "biosignal": "Pain expression with confidence 0.92 and jaw clenched",
+      "expected": {
+        "biosignal": "Pain expression with confidence 0.92 and jaw clenched",
+        "expected_category": "urgent_medical",
+        "expected_sentiment": "pain",
+        "scenario": "Patient in significant discomfort"
+      },
+      "response": "\"This hurts.\"",
+      "response_time": 0.7507901191711426,
+      "analysis": {
+        "relevance_score": 0.16666666666666666,
+        "medical_appropriateness": 1.0,
+        "first_person_score": 0.0,
+        "urgency_match": 0.0,
+        "overall_score": 0.2916666666666667
+      }
+    },
+    {
+      "case_id": 4,
+      "biosignal": "Neutral expression with confidence 0.65 and slow eye movements",
+      "expected": {
+        "biosignal": "Neutral expression with confidence 0.65 and slow eye movements",
+        "expected_category": "routine_monitoring",
+        "expected_sentiment": "neutral",
+        "scenario": "Baseline patient state"
+      },
+      "response": "\"I understand.\"",
+      "response_time": 0.8499882221221924,
+      "analysis": {
+        "relevance_score": 0.0,
+        "medical_appropriateness": 1.0,
+        "first_person_score": 0.5,
+        "urgency_match": 1.0,
+        "overall_score": 0.625
+      }
+    }
+  ],
+  "summary": {
+    "base_avg_score": 0.7183333333333334,
+    "finetuned_avg_score": 0.5166666666666667,
+    "improvement_percent": -28.07424593967517,
+    "base_avg_time": 11.746417903900147,
+    "finetuned_avg_time": 1.6883150577545165
+  }
+}
